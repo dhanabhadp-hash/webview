@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: purchase-records
+    description: e-GP medicine procurement records
 paths:
   /healthz:
     get:
@@ -24,6 +26,139 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /purchase-records:
+    get:
+      operationId: listPurchaseRecords
+      tags: [purchase-records]
+      summary: Search and filter purchase records
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: supplierCode
+          schema: { type: string }
+        - in: query
+          name: recordStatus
+          schema:
+            type: string
+            enum: [verified, flagged, unmarked]
+        - in: query
+          name: deliveryState
+          schema:
+            type: string
+            enum: [delivered, pending]
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 100, default: 25 }
+      responses:
+        "200":
+          description: A page of matching purchase records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseRecordList"
+    post:
+      operationId: createPurchaseRecord
+      tags: [purchase-records]
+      summary: Create a purchase record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseRecordInput"
+      responses:
+        "201":
+          description: Created purchase record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseRecord"
+  /purchase-records/{id}:
+    get:
+      operationId: getPurchaseRecord
+      tags: [purchase-records]
+      summary: Get a purchase record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Purchase record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseRecord"
+        "404":
+          description: Purchase record not found
+    patch:
+      operationId: updatePurchaseRecord
+      tags: [purchase-records]
+      summary: Update a purchase record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PurchaseRecordUpdate"
+      responses:
+        "200":
+          description: Updated purchase record
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseRecord"
+        "404":
+          description: Purchase record not found
+    delete:
+      operationId: deletePurchaseRecord
+      tags: [purchase-records]
+      summary: Delete a purchase record
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer }
+      responses:
+        "204":
+          description: Purchase record deleted
+        "404":
+          description: Purchase record not found
+  /purchase-summary:
+    get:
+      operationId: getPurchaseSummary
+      tags: [purchase-records]
+      summary: Get procurement and delivery totals
+      responses:
+        "200":
+          description: Aggregate purchase record counts and value
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseSummary"
+  /purchase-record-filters:
+    get:
+      operationId: getPurchaseRecordFilters
+      tags: [purchase-records]
+      summary: Get available supplier and status filters
+      responses:
+        "200":
+          description: Available filters for purchase records
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseRecordFilters"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +168,187 @@ components:
           type: string
       required:
         - status
+    PurchaseRecord:
+      type: object
+      required:
+        - id
+        - sourceSheetRow
+        - projectNumber
+        - poNumber
+        - committeeNumber
+        - requestDate
+        - supplierCode
+        - supplierName
+        - taxId
+        - recordStatus
+        - productName
+        - companyDrugKey
+        - quantity
+        - unit
+        - unitPrice
+        - lineTotal
+        - gpu
+        - tpu
+        - representative
+        - contractNumber
+        - deliveryStatus
+        - note
+        - invoiceDate
+        - acceptanceDate
+        - invoiceNumber
+        - acceptanceStatus
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: integer }
+        sourceSheetRow: { type: ["integer", "null"] }
+        projectNumber: { type: string }
+        poNumber: { type: string }
+        committeeNumber: { type: string }
+        requestDate: { type: string }
+        supplierCode: { type: string }
+        supplierName: { type: string }
+        taxId: { type: string }
+        recordStatus: { type: string }
+        productName: { type: string }
+        companyDrugKey: { type: string }
+        quantity: { type: ["number", "null"] }
+        unit: { type: string }
+        unitPrice: { type: ["number", "null"] }
+        lineTotal: { type: ["number", "null"] }
+        gpu: { type: string }
+        tpu: { type: string }
+        representative: { type: string }
+        contractNumber: { type: string }
+        deliveryStatus: { type: string }
+        note: { type: string }
+        invoiceDate: { type: string }
+        acceptanceDate: { type: string }
+        invoiceNumber: { type: string }
+        acceptanceStatus: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PurchaseRecordInput:
+      type: object
+      required:
+        - projectNumber
+        - poNumber
+        - committeeNumber
+        - requestDate
+        - supplierCode
+        - supplierName
+        - taxId
+        - recordStatus
+        - productName
+        - companyDrugKey
+        - quantity
+        - unit
+        - unitPrice
+        - lineTotal
+        - gpu
+        - tpu
+        - representative
+        - contractNumber
+        - deliveryStatus
+        - note
+        - invoiceDate
+        - acceptanceDate
+        - invoiceNumber
+        - acceptanceStatus
+      properties:
+        projectNumber: { type: string }
+        poNumber: { type: string }
+        committeeNumber: { type: string }
+        requestDate: { type: string }
+        supplierCode: { type: string }
+        supplierName: { type: string }
+        taxId: { type: string }
+        recordStatus: { type: string }
+        productName: { type: string, minLength: 1 }
+        companyDrugKey: { type: string }
+        quantity: { type: ["number", "null"] }
+        unit: { type: string }
+        unitPrice: { type: ["number", "null"] }
+        lineTotal: { type: ["number", "null"] }
+        gpu: { type: string }
+        tpu: { type: string }
+        representative: { type: string }
+        contractNumber: { type: string }
+        deliveryStatus: { type: string }
+        note: { type: string }
+        invoiceDate: { type: string }
+        acceptanceDate: { type: string }
+        invoiceNumber: { type: string }
+        acceptanceStatus: { type: string }
+    PurchaseRecordUpdate:
+      type: object
+      minProperties: 1
+      properties:
+        projectNumber: { type: string }
+        poNumber: { type: string }
+        committeeNumber: { type: string }
+        requestDate: { type: string }
+        supplierCode: { type: string }
+        supplierName: { type: string }
+        taxId: { type: string }
+        recordStatus: { type: string }
+        productName: { type: string, minLength: 1 }
+        companyDrugKey: { type: string }
+        quantity: { type: ["number", "null"] }
+        unit: { type: string }
+        unitPrice: { type: ["number", "null"] }
+        lineTotal: { type: ["number", "null"] }
+        gpu: { type: string }
+        tpu: { type: string }
+        representative: { type: string }
+        contractNumber: { type: string }
+        deliveryStatus: { type: string }
+        note: { type: string }
+        invoiceDate: { type: string }
+        acceptanceDate: { type: string }
+        invoiceNumber: { type: string }
+        acceptanceStatus: { type: string }
+    PurchaseRecordList:
+      type: object
+      required: [items, total, page, pageSize]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseRecord"
+        total: { type: integer }
+        page: { type: integer }
+        pageSize: { type: integer }
+    PurchaseSummary:
+      type: object
+      required:
+        - totalRecords
+        - totalValue
+        - deliveredRecords
+        - pendingDeliveryRecords
+        - completedAcceptanceRecords
+        - pendingAcceptanceRecords
+        - supplierCount
+      properties:
+        totalRecords: { type: integer }
+        totalValue: { type: number }
+        deliveredRecords: { type: integer }
+        pendingDeliveryRecords: { type: integer }
+        completedAcceptanceRecords: { type: integer }
+        pendingAcceptanceRecords: { type: integer }
+        supplierCount: { type: integer }
+    SupplierFilterOption:
+      type: object
+      required: [supplierCode, supplierName]
+      properties:
+        supplierCode: { type: string }
+        supplierName: { type: string }
+    PurchaseRecordFilters:
+      type: object
+      required: [suppliers]
+      properties:
+        suppliers:
+          type: array
+          items:
+            $ref: "#/components/schemas/SupplierFilterOption"
 

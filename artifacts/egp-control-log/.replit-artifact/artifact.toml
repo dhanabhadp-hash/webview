@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "e-GP Purchase Tracker"
+description = "An internal procurement record manager built from the e-GP Control Log spreadsheet. Search and filter medicine purchase lines, track supplier and receiving status, and create, edit, or delete records backed by PostgreSQL."
+version = "1.0.0"
+id = "artifacts/egp-control-log"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 24289
+
+[services.development]
+run = "pnpm --filter @workspace/egp-control-log run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/egp-control-log", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/egp-control-log/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24289"
+BASE_PATH = "/"
