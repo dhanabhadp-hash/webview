@@ -32,6 +32,13 @@ export const ListPurchaseRecordsQueryParams = zod.object({
   "supplierCode": zod.coerce.string().optional(),
   "recordStatus": zod.enum(['verified', 'flagged', 'unmarked']).optional(),
   "deliveryState": zod.enum(['delivered', 'pending']).optional(),
+  "productName": zod.coerce.string().optional(),
+  "poNumber": zod.coerce.string().optional(),
+  "requestDate": zod.coerce.string().optional(),
+  "quantity": zod.coerce.string().optional(),
+  "lineTotal": zod.coerce.string().optional(),
+  "sortBy": zod.enum(['productName', 'poNumber', 'supplierName', 'requestDate', 'quantity', 'lineTotal', 'recordStatus', 'deliveryStatus']).optional(),
+  "sortOrder": zod.enum(['asc', 'desc']).optional(),
   "page": zod.coerce.number().int().min(1).default(listPurchaseRecordsQueryPageDefault),
   "pageSize": zod.coerce.number().int().min(1).max(listPurchaseRecordsQueryPageSizeMax).default(listPurchaseRecordsQueryPageSizeDefault)
 })
@@ -278,6 +285,27 @@ export const GetPurchaseRecordFiltersResponse = zod.object({
   "supplierCode": zod.string(),
   "supplierName": zod.string()
 }))
+})
+
+
+/**
+ * @summary Get published CSV sync status
+ */
+export const GetPurchaseSyncStatusResponse = zod.object({
+  "configured": zod.boolean(),
+  "rowCount": zod.number().int().nullable(),
+  "lastSyncedAt": zod.coerce.date().nullable()
+})
+
+
+/**
+ * @summary Import current published CSV records
+ */
+export const SyncPurchaseRecordsResponse = zod.object({
+  "rowCount": zod.number().int(),
+  "insertedCount": zod.number().int(),
+  "updatedCount": zod.number().int(),
+  "lastSyncedAt": zod.coerce.date()
 })
 
 

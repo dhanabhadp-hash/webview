@@ -27,7 +27,9 @@ import type {
   PurchaseRecordInput,
   PurchaseRecordList,
   PurchaseRecordUpdate,
-  PurchaseSummary
+  PurchaseSummary,
+  PurchaseSyncResult,
+  PurchaseSyncStatus
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -700,4 +702,155 @@ export function useGetPurchaseRecordFilters<TData = Awaited<ReturnType<typeof ge
 
 
 
+
+export const getGetPurchaseSyncStatusUrl = () => {
+
+
+
+
+  return `/api/purchase-sync-status`
+}
+
+/**
+ * @summary Get published CSV sync status
+ */
+export const getPurchaseSyncStatus = async ( options?: Parameters<typeof customFetch>[1]): Promise<PurchaseSyncStatus> => {
+
+  return customFetch<PurchaseSyncStatus>(getGetPurchaseSyncStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPurchaseSyncStatusQueryKey = () => {
+    return [
+    `/api/purchase-sync-status`
+    ] as const;
+    }
+
+
+export const getGetPurchaseSyncStatusQueryOptions = <TData = Awaited<ReturnType<typeof getPurchaseSyncStatus>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPurchaseSyncStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPurchaseSyncStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPurchaseSyncStatus>>> = ({ signal }) => getPurchaseSyncStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPurchaseSyncStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPurchaseSyncStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getPurchaseSyncStatus>>>
+export type GetPurchaseSyncStatusQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get published CSV sync status
+ */
+
+export function useGetPurchaseSyncStatus<TData = Awaited<ReturnType<typeof getPurchaseSyncStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPurchaseSyncStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPurchaseSyncStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSyncPurchaseRecordsUrl = () => {
+
+
+
+
+  return `/api/purchase-sync`
+}
+
+/**
+ * @summary Import current published CSV records
+ */
+export const syncPurchaseRecords = async ( options?: Parameters<typeof customFetch>[1]): Promise<PurchaseSyncResult> => {
+
+  return customFetch<PurchaseSyncResult>(getSyncPurchaseRecordsUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getSyncPurchaseRecordsMutationKey = () => ['syncPurchaseRecords'] as const;
+
+export const getSyncPurchaseRecordsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncPurchaseRecords>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof syncPurchaseRecords>>, TError,void, TContext> => {
+
+const mutationKey = getSyncPurchaseRecordsMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof syncPurchaseRecords>>, void> = () => {
+
+
+          return  syncPurchaseRecords(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SyncPurchaseRecordsMutationResult = NonNullable<Awaited<ReturnType<typeof syncPurchaseRecords>>>
+
+    export type SyncPurchaseRecordsMutationError = ErrorType<void>
+
+
+    /**
+ * @summary Import current published CSV records
+ */
+export const useSyncPurchaseRecords = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof syncPurchaseRecords>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof syncPurchaseRecords>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getSyncPurchaseRecordsMutationOptions(options));
+    }
 

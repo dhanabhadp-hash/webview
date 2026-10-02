@@ -7,12 +7,21 @@
  */
 import type { ListPurchaseRecordsDeliveryState } from './listPurchaseRecordsDeliveryState';
 import type { ListPurchaseRecordsRecordStatus } from './listPurchaseRecordsRecordStatus';
+import type { ListPurchaseRecordsSortBy } from './listPurchaseRecordsSortBy';
+import type { ListPurchaseRecordsSortOrder } from './listPurchaseRecordsSortOrder';
 
 export type ListPurchaseRecordsParams = {
 q?: string;
 supplierCode?: string;
 recordStatus?: ListPurchaseRecordsRecordStatus;
 deliveryState?: ListPurchaseRecordsDeliveryState;
+productName?: string;
+poNumber?: string;
+requestDate?: string;
+quantity?: string;
+lineTotal?: string;
+sortBy?: ListPurchaseRecordsSortBy;
+sortOrder?: ListPurchaseRecordsSortOrder;
 /**
  * @minimum 1
  */

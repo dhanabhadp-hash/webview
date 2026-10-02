@@ -49,6 +49,31 @@ paths:
             type: string
             enum: [delivered, pending]
         - in: query
+          name: productName
+          schema: { type: string }
+        - in: query
+          name: poNumber
+          schema: { type: string }
+        - in: query
+          name: requestDate
+          schema: { type: string }
+        - in: query
+          name: quantity
+          schema: { type: string }
+        - in: query
+          name: lineTotal
+          schema: { type: string }
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [productName, poNumber, supplierName, requestDate, quantity, lineTotal, recordStatus, deliveryStatus]
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum: [asc, desc]
+        - in: query
           name: page
           schema: { type: integer, minimum: 1, default: 1 }
         - in: query
@@ -159,6 +184,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PurchaseRecordFilters"
+  /purchase-sync-status:
+    get:
+      operationId: getPurchaseSyncStatus
+      tags: [purchase-records]
+      summary: Get published CSV sync status
+      responses:
+        "200":
+          description: Current CSV sync configuration and last successful import
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseSyncStatus"
+  /purchase-sync:
+    post:
+      operationId: syncPurchaseRecords
+      tags: [purchase-records]
+      summary: Import current published CSV records
+      responses:
+        "200":
+          description: Published CSV records imported
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseSyncResult"
+        "503":
+          description: Published CSV is not configured or could not be fetched
+        "422":
+          description: Published CSV does not match the expected columns
 components:
   schemas:
     HealthStatus:
@@ -351,4 +404,19 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/SupplierFilterOption"
+    PurchaseSyncStatus:
+      type: object
+      required: [configured, rowCount, lastSyncedAt]
+      properties:
+        configured: { type: boolean }
+        rowCount: { type: ["integer", "null"] }
+        lastSyncedAt: { type: ["string", "null"], format: date-time }
+    PurchaseSyncResult:
+      type: object
+      required: [rowCount, insertedCount, updatedCount, lastSyncedAt]
+      properties:
+        rowCount: { type: integer }
+        insertedCount: { type: integer }
+        updatedCount: { type: integer }
+        lastSyncedAt: { type: string, format: date-time }
 

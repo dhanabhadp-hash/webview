@@ -132,11 +132,33 @@ export interface PurchaseRecordFilters {
   suppliers: SupplierFilterOption[];
 }
 
+export interface PurchaseSyncStatus {
+  configured: boolean;
+  /** @nullable */
+  rowCount: number | null;
+  /** @nullable */
+  lastSyncedAt: string | null;
+}
+
+export interface PurchaseSyncResult {
+  rowCount: number;
+  insertedCount: number;
+  updatedCount: number;
+  lastSyncedAt: string;
+}
+
 export type ListPurchaseRecordsParams = {
 q?: string;
 supplierCode?: string;
 recordStatus?: ListPurchaseRecordsRecordStatus;
 deliveryState?: ListPurchaseRecordsDeliveryState;
+productName?: string;
+poNumber?: string;
+requestDate?: string;
+quantity?: string;
+lineTotal?: string;
+sortBy?: ListPurchaseRecordsSortBy;
+sortOrder?: ListPurchaseRecordsSortOrder;
 /**
  * @minimum 1
  */
@@ -163,5 +185,27 @@ export type ListPurchaseRecordsDeliveryState = typeof ListPurchaseRecordsDeliver
 export const ListPurchaseRecordsDeliveryState = {
   delivered: 'delivered',
   pending: 'pending',
+} as const;
+
+export type ListPurchaseRecordsSortBy = typeof ListPurchaseRecordsSortBy[keyof typeof ListPurchaseRecordsSortBy];
+
+
+export const ListPurchaseRecordsSortBy = {
+  productName: 'productName',
+  poNumber: 'poNumber',
+  supplierName: 'supplierName',
+  requestDate: 'requestDate',
+  quantity: 'quantity',
+  lineTotal: 'lineTotal',
+  recordStatus: 'recordStatus',
+  deliveryStatus: 'deliveryStatus',
+} as const;
+
+export type ListPurchaseRecordsSortOrder = typeof ListPurchaseRecordsSortOrder[keyof typeof ListPurchaseRecordsSortOrder];
+
+
+export const ListPurchaseRecordsSortOrder = {
+  asc: 'asc',
+  desc: 'desc',
 } as const;
 
