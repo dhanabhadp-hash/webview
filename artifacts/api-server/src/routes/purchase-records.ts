@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ilike, ne, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { Router, type IRouter } from "express";
 import {
   CreatePurchaseRecordBody,
@@ -35,7 +35,19 @@ router.get("/purchase-records", async (req, res): Promise<void> => {
     return;
   }
 
-  const { q, supplierCode, recordStatus, deliveryState } = parsed.data;
+  const {
+    q,
+    supplierCode,
+    recordStatus,
+    deliveryState,
+    productName,
+    poNumber,
+    requestDate,
+    quantity,
+    lineTotal,
+    sortBy,
+    sortOrder,
+  } = parsed.data;
   const page = parsed.data.page ?? 1;
   const pageSize = parsed.data.pageSize ?? 25;
   const conditions = [];
@@ -61,20 +73,48 @@ router.get("/purchase-records", async (req, res): Promise<void> => {
     if (search) conditions.push(search);
   }
 
+  const addTextFilter = (
+    value: string | undefined,
+    column:
+      | typeof purchaseRecordsTable.productName
+      | typeof purchaseRecordsTable.poNumber
+      | typeof purchaseRecordsTable.requestDate,
+  ) => {
+    if (!value?.trim()) return;
+    const escaped = value.trim().replace(/[\\%_]/g, "\\$&");
+    conditions.push(ilike(column, `%${escaped}%`));
+  };
+  const addNumericFilter = (
+    value: string | undefined,
+    column:
+      | typeof purchaseRecordsTable.quantity
+      | typeof purchaseRecordsTable.lineTotal,
+  ) => {
+    if (!value?.trim()) return;
+    const escaped = value.trim().replace(/[\\%_]/g, "\\$&");
+    conditions.push(sql`${column}::text ILIKE ${`%${escaped}%`}`);
+  };
+
+  addTextFilter(productName, purchaseRecordsTable.productName);
+  addTextFilter(poNumber, purchaseRecordsTable.poNumber);
+  addTextFilter(requestDate, purchaseRecordsTable.requestDate);
+  addNumericFilter(quantity, purchaseRecordsTable.quantity);
+  addNumericFilter(lineTotal, purchaseRecordsTable.lineTotal);
+
   if (supplierCode) {
     conditions.push(eq(purchaseRecordsTable.supplierCode, supplierCode));
   }
   if (recordStatus === "verified") {
     conditions.push(
       or(
-        eq(purchaseRecordsTable.recordStatus, "✔️"),
+        ilike(purchaseRecordsTable.recordStatus, "✔%"),
         eq(purchaseRecordsTable.recordStatus, "verified"),
       )!,
     );
   } else if (recordStatus === "flagged") {
     conditions.push(
       or(
-        eq(purchaseRecordsTable.recordStatus, "❌"),
+        ilike(purchaseRecordsTable.recordStatus, "❌%"),
         eq(purchaseRecordsTable.recordStatus, "flagged"),
       )!,
     );
@@ -87,12 +127,36 @@ router.get("/purchase-records", async (req, res): Promise<void> => {
     );
   }
   if (deliveryState === "delivered") {
-    conditions.push(eq(purchaseRecordsTable.deliveryStatus, "TRUE"));
+    conditions.push(sql`upper(btrim(${purchaseRecordsTable.deliveryStatus})) = 'TRUE'`);
   } else if (deliveryState === "pending") {
-    conditions.push(ne(purchaseRecordsTable.deliveryStatus, "TRUE"));
+    conditions.push(sql`upper(btrim(${purchaseRecordsTable.deliveryStatus})) <> 'TRUE'`);
   }
 
   const where = and(...conditions);
+  const sortColumns = {
+    productName: purchaseRecordsTable.productName,
+    poNumber: purchaseRecordsTable.poNumber,
+    supplierName: purchaseRecordsTable.supplierName,
+    requestDate: sql`CASE
+      WHEN ${purchaseRecordsTable.requestDate} ~ '^[0-9]{1,2}/[0-9]{1,2}/[0-9]{4}$' THEN
+        lpad((
+          split_part(${purchaseRecordsTable.requestDate}, '/', 3)::int -
+          CASE WHEN split_part(${purchaseRecordsTable.requestDate}, '/', 3)::int >= 2400 THEN 543 ELSE 0 END
+        )::text, 4, '0') || '-' ||
+        lpad(split_part(${purchaseRecordsTable.requestDate}, '/', 2), 2, '0') || '-' ||
+        lpad(split_part(${purchaseRecordsTable.requestDate}, '/', 1), 2, '0')
+      WHEN ${purchaseRecordsTable.requestDate} ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' THEN ${purchaseRecordsTable.requestDate}
+      ELSE NULL
+    END`,
+    quantity: purchaseRecordsTable.quantity,
+    lineTotal: purchaseRecordsTable.lineTotal,
+    recordStatus: purchaseRecordsTable.recordStatus,
+    deliveryStatus: purchaseRecordsTable.deliveryStatus,
+  };
+  const sortColumn = sortBy ? sortColumns[sortBy] : undefined;
+  const primaryOrder =
+    sortColumn && sortOrder === "asc" ? asc(sortColumn) : sortColumn ? desc(sortColumn) : desc(purchaseRecordsTable.id);
+
   const [countResult, records] = await Promise.all([
     db
       .select({ total: sql<number>`count(*)::int` })
@@ -102,7 +166,7 @@ router.get("/purchase-records", async (req, res): Promise<void> => {
       .select()
       .from(purchaseRecordsTable)
       .where(where)
-      .orderBy(desc(purchaseRecordsTable.id))
+      .orderBy(primaryOrder, desc(purchaseRecordsTable.id))
       .limit(pageSize)
       .offset((page - 1) * pageSize),
   ]);

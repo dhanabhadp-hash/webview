@@ -1,23 +1,13 @@
-import { Card, CardContent } from '@/components/ui/card';
-import { AlertCircle } from 'lucide-react';
+import { Link } from 'wouter';
+import { AlertCircle, ArrowLeft } from 'lucide-react';
 
 export default function NotFound() {
-  return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gray-50">
-      <Card className="w-full max-w-md mx-4">
-        <CardContent className="pt-6">
-          <div className="flex mb-4 gap-2">
-            <AlertCircle className="h-8 w-8 text-red-500" />
-            <h1 className="text-2xl font-bold text-gray-900">
-              404 Page Not Found
-            </h1>
-          </div>
-
-          <p className="mt-4 text-sm text-gray-600">
-            Did you forget to add the page to the router?
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
+  return <main className="page not-found-page">
+    <section className="error-state" aria-labelledby="not-found-title">
+      <AlertCircle size={30} />
+      <h1 id="not-found-title">ไม่พบหน้าที่ต้องการ</h1>
+      <p>ตรวจสอบที่อยู่ หรือกลับไปยังทะเบียนจัดซื้อยา</p>
+      <Link href="/" className="button button-primary"><ArrowLeft size={15} />กลับทะเบียนจัดซื้อ</Link>
+    </section>
+  </main>;
 }

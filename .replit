@@ -18,3 +18,8 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
+
+[userenv]
+
+[userenv.shared]
+EGP_PUBLISHED_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vREnC1DRwCK6eNw37-9p5wmEuDW3mABwEIS3-HJ5_6tiy5AGxdXhk8thTD8oYREcfoB-jA0rJy7yFhL/pub?gid=1875775316&single=true&output=csv"
